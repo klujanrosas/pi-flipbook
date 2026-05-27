@@ -1,52 +1,73 @@
 {
-  "name": "pi-flipbook",
-  "version": "0.1.0",
-  "description": "Drop a short video into pi and the agent gets a flipbook of frames — auto-extracts 6–12 images per clip via ffmpeg so you can debug UI bugs without manual screenshotting.",
-  "type": "module",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "check": "tsc --noEmit && vitest run"
-  },
-  "files": [
-    "src",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "pi-package",
-    "pi",
-    "coding-agent",
-    "extension",
-    "video",
-    "ffmpeg",
-    "frames",
-    "screen-recording",
-    "debugging"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
-  "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
-    "@mariozechner/pi-ai": "*",
-    "@sinclair/typebox": "*"
-  },
-  "devDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
-    "@mariozechner/pi-ai": "*",
-    "@sinclair/typebox": "*",
-    "@types/node": "^24.3.0",
-    "typescript": "^5.9.2",
-    "vitest": "^2.1.8"
-  },
-  "pi": {
-    "extensions": [
-      "./src/index.ts"
-    ]
-  }
+	"name": "pi-flipbook",
+	"version": "0.1.0",
+	"description": "Drop a short video into pi and the agent gets a flipbook of frames — auto-extracts 6–12 images per clip via ffmpeg so you can debug UI bugs without manual screenshotting.",
+	"type": "module",
+	"license": "MIT",
+	"author": "Kenneth Lujan",
+	"homepage": "https://github.com/klujanrosas/pi-flipbook",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/klujanrosas/pi-flipbook.git"
+	},
+	"bugs": {
+		"url": "https://github.com/klujanrosas/pi-flipbook/issues"
+	},
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"video",
+		"ffmpeg",
+		"frames",
+		"flipbook",
+		"screen-recording",
+		"debugging",
+		"coding-agent"
+	],
+	"engines": {
+		"node": ">=20"
+	},
+	"pi": {
+		"extensions": [
+			"./src/index.ts"
+		]
+	},
+	"files": [
+		"src",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/",
+		"provenance": true
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"lint": "biome check .",
+		"format": "biome format --write .",
+		"fix": "biome check --write .",
+		"clean": "rm -rf node_modules .tsbuildinfo coverage",
+		"build": "echo 'nothing to build — Pi loads TS via jiti' && npm run typecheck",
+		"check": "npm run typecheck && npm run lint && npm test",
+		"prepublishOnly": "npm run check",
+		"release:patch": "npm version patch && git push --follow-tags",
+		"release:minor": "npm version minor && git push --follow-tags",
+		"release:major": "npm version major && git push --follow-tags"
+	},
+	"peerDependencies": {
+		"@mariozechner/pi-coding-agent": "*",
+		"@mariozechner/pi-ai": "*"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.5",
+		"@mariozechner/pi-coding-agent": "*",
+		"@mariozechner/pi-ai": "*",
+		"@types/node": "^24.3.0",
+		"typescript": "^5.9.2",
+		"vitest": "^2.1.8"
+	}
 }

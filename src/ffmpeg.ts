@@ -9,7 +9,7 @@
  * (e.g. user hits Ctrl+C during a turn).
  */
 
-import { spawn } from "node:child_process";
+import { type ChildProcess, spawn } from "node:child_process";
 
 export interface FfmpegProbe {
 	/** `true` if both `ffmpeg` and `ffprobe` resolved on PATH. */
@@ -35,7 +35,7 @@ function run(cmd: string, args: readonly string[], signal?: AbortSignal): Promis
 			reject(new Error(`${cmd}: aborted before spawn`));
 			return;
 		}
-		let proc;
+		let proc: ChildProcess;
 		try {
 			proc = spawn(cmd, args, { stdio: ["ignore", "pipe", "pipe"] });
 		} catch (err) {
@@ -155,7 +155,7 @@ export async function findSceneChanges(
 	const re = /pts_time:([\d.]+)/g;
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(stderr)) !== null) {
-		const t = Number.parseFloat(m[1]);
+		const t = Number.parseFloat(m[1]!);
 		if (Number.isFinite(t)) ts.push(t);
 	}
 	// Already in stream order, but be defensive in case ffmpeg ever interleaves.
@@ -181,8 +181,7 @@ export async function extractFrame(
 	//   - landscape (iw > ih): width = min(EDGE, iw), height = -2 (auto, even).
 	//   - portrait  (ih ≥ iw): height = min(EDGE, ih), width = -2 (auto, even).
 	// `-2` (vs `-1`) forces the auto-computed dimension to be divisible by 2.
-	const scale =
-		`scale='if(gt(iw,ih),min(${maxEdge},iw),-2)':'if(gt(iw,ih),-2,min(${maxEdge},ih))'`;
+	const scale = `scale='if(gt(iw,ih),min(${maxEdge},iw),-2)':'if(gt(iw,ih),-2,min(${maxEdge},ih))'`;
 	const { stderr, code } = await run(
 		"ffmpeg",
 		[

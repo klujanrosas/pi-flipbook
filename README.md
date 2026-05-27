@@ -23,16 +23,20 @@ and swaps the path for a chronological batch of JPG frames. The model receives t
 
 ## Install
 
-### As a pi package (once published)
-
 ```bash
 pi install npm:pi-flipbook
+```
+
+Or from git:
+
+```bash
+pi install git:github.com/klujanrosas/pi-flipbook
 ```
 
 ### From source (dev)
 
 ```bash
-git clone <repo> ~/path/to/pi-flipbook
+git clone https://github.com/klujanrosas/pi-flipbook.git
 pi -e ~/path/to/pi-flipbook/src/index.ts
 ```
 

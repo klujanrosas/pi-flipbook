@@ -15,13 +15,13 @@
  */
 
 import { access, mkdtemp, readFile, rm } from "node:fs/promises";
-import { isAbsolute, basename, resolve as resolvePath, join } from "node:path";
 import { homedir, tmpdir } from "node:os";
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { basename, isAbsolute, join, resolve as resolvePath } from "node:path";
 import type { ImageContent } from "@mariozechner/pi-ai";
-import { detectVideoPaths, type DetectedVideoPath } from "./detect-paths.ts";
+import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { type DetectedVideoPath, detectVideoPaths } from "./detect-paths.ts";
+import { checkFfmpeg, extractFrame, findSceneChanges, probeDuration } from "./ffmpeg.ts";
 import { selectTimestamps } from "./select-frames.ts";
-import { checkFfmpeg, probeDuration, findSceneChanges, extractFrame } from "./ffmpeg.ts";
 
 // ─── config (env vars; no config file for MVP) ───────────────────────────────────────────────
 
@@ -65,15 +65,11 @@ export default function (pi: ExtensionAPI): void {
 		}
 
 		// Process each detection in parallel — they're independent clips.
-		const results = await Promise.all(
-			detections.map((d) => processOne(d, ctx, pendingCleanup)),
-		);
+		const results = await Promise.all(detections.map((d) => processOne(d, ctx, pendingCleanup)));
 
 		// Splice replacements back into the original text in reverse order so earlier offsets
 		// stay valid. Successful results carry a tag string; failures keep the raw token in place.
-		const sortedByStartDesc = results
-			.map((r, i) => ({ r, d: detections[i] }))
-			.sort((a, b) => b.d.start - a.d.start);
+		const sortedByStartDesc = results.map((r, i) => ({ r, d: detections[i]! })).sort((a, b) => b.d.start - a.d.start);
 
 		let newText = event.text;
 		const newImages: ImageContent[] = [];
@@ -105,17 +101,13 @@ export default function (pi: ExtensionAPI): void {
 		if (pendingCleanup.size === 0) return;
 		const dirs = [...pendingCleanup];
 		pendingCleanup.clear();
-		await Promise.all(
-			dirs.map((dir) => rm(dir, { recursive: true, force: true }).catch(() => undefined)),
-		);
+		await Promise.all(dirs.map((dir) => rm(dir, { recursive: true, force: true }).catch(() => undefined)));
 	});
 }
 
 // ─── per-clip pipeline ───────────────────────────────────────────────────────────────────────
 
-type ProcessResult =
-	| { kind: "ok"; tag: string; images: ImageContent[] }
-	| { kind: "fail" };
+type ProcessResult = { kind: "ok"; tag: string; images: ImageContent[] } | { kind: "fail" };
 
 async function processOne(
 	d: DetectedVideoPath,

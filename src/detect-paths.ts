@@ -57,7 +57,8 @@ export function detectVideoPaths(text: string): DetectedVideoPath[] {
 	const out: DetectedVideoPath[] = [];
 	for (const m of raw) {
 		if (inCode(m.start, codeRanges)) continue;
-		if (out.length > 0 && m.start < out[out.length - 1].end) continue;
+		const last = out[out.length - 1];
+		if (last && m.start < last.end) continue;
 		out.push(m);
 	}
 	return out;
@@ -72,6 +73,7 @@ function collectFileUrl(text: string, out: DetectedVideoPath[]): void {
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(text)) !== null) {
 		const raw = m[0];
+		if (!raw) continue;
 		let decoded: string;
 		try {
 			// Strip file:// prefix (file:// or file:///) then URL-decode.
@@ -97,6 +99,7 @@ function collectQuoted(text: string, out: DetectedVideoPath[], quote: '"' | "'")
 	while ((m = re.exec(text)) !== null) {
 		const raw = m[0];
 		const inner = m[1];
+		if (!raw || !inner) continue;
 		out.push({
 			raw,
 			start: m.index,
@@ -124,7 +127,9 @@ function collectUnquoted(text: string, out: DetectedVideoPath[]): void {
 	);
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(text)) !== null) {
+		const full = m[0];
 		const raw = m[1];
+		if (!full || !raw) continue;
 		// Skip file:// URLs — those are handled authoritatively by collectFileUrl, which may
 		// have deliberately rejected a malformed one (invalid percent-encoding, etc.).
 		// Letting the greedy unquoted matcher resurrect them would defeat that check.
@@ -132,8 +137,8 @@ function collectUnquoted(text: string, out: DetectedVideoPath[]): void {
 		const unescaped = raw.replace(/\\ /g, " ").replace(/\\\\/g, "\\");
 		out.push({
 			raw,
-			start: m.index + (m[0].length - raw.length), // m[0] may include the whitespace pre-anchor
-			end: m.index + (m[0].length - raw.length) + raw.length,
+			start: m.index + (full.length - raw.length), // m[0] may include the whitespace pre-anchor
+			end: m.index + (full.length - raw.length) + raw.length,
 			path: expandTilde(unescaped),
 		});
 	}

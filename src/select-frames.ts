@@ -49,14 +49,20 @@ export function selectTimestamps(
 		.filter((t) => t > minGapSeconds && t < last - minGapSeconds)
 		.sort((a, b) => a - b);
 
-	let candidates = dedupeSorted([...seed, ...inRangeScenes].sort((a, b) => a - b), minGapSeconds);
+	let candidates = dedupeSorted(
+		[...seed, ...inRangeScenes].sort((a, b) => a - b),
+		minGapSeconds,
+	);
 
 	// Fill gaps if under minFrames.
 	while (candidates.length < minFrames && candidates.length < maxFrames) {
 		const insert = findLargestGapMidpoint(candidates);
 		if (insert === null) break;
 		const prev = candidates.length;
-		candidates = dedupeSorted([...candidates, insert].sort((a, b) => a - b), minGapSeconds);
+		candidates = dedupeSorted(
+			[...candidates, insert].sort((a, b) => a - b),
+			minGapSeconds,
+		);
 		// If the midpoint was deduped (too close to an existing candidate), no progress is
 		// possible — bail out to avoid an infinite loop on very short clips.
 		if (candidates.length <= prev) break;
@@ -76,9 +82,10 @@ export function selectTimestamps(
 
 function dedupeSorted(xs: number[], minGap: number): number[] {
 	if (xs.length === 0) return xs;
-	const out = [xs[0]];
+	const first = xs[0]!;
+	const out = [first];
 	for (let i = 1; i < xs.length; i++) {
-		if (xs[i] - out[out.length - 1] >= minGap) out.push(xs[i]);
+		if (xs[i]! - out[out.length - 1]! >= minGap) out.push(xs[i]!);
 	}
 	return out;
 }
@@ -88,10 +95,10 @@ function findLargestGapMidpoint(xs: number[]): number | null {
 	let bestGap = 0;
 	let bestMid: number | null = null;
 	for (let i = 1; i < xs.length; i++) {
-		const gap = xs[i] - xs[i - 1];
+		const gap = xs[i]! - xs[i - 1]!;
 		if (gap > bestGap) {
 			bestGap = gap;
-			bestMid = (xs[i - 1] + xs[i]) / 2;
+			bestMid = (xs[i - 1]! + xs[i]!) / 2;
 		}
 	}
 	return bestMid;
@@ -106,7 +113,7 @@ function findNearestInteriorIndex(xs: number[]): number {
 	let bestIdx = -1;
 	let bestNearest = Infinity;
 	for (let i = 1; i < xs.length - 1; i++) {
-		const nearest = Math.min(xs[i] - xs[i - 1], xs[i + 1] - xs[i]);
+		const nearest = Math.min(xs[i]! - xs[i - 1]!, xs[i + 1]! - xs[i]!);
 		if (nearest < bestNearest) {
 			bestNearest = nearest;
 			bestIdx = i;
