@@ -1,0 +1,52 @@
+{
+  "name": "pi-flipbook",
+  "version": "0.1.0",
+  "description": "Drop a short video into pi and the agent gets a flipbook of frames — auto-extracts 6–12 images per clip via ffmpeg so you can debug UI bugs without manual screenshotting.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "tsc --noEmit && vitest run"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "pi-package",
+    "pi",
+    "coding-agent",
+    "extension",
+    "video",
+    "ffmpeg",
+    "frames",
+    "screen-recording",
+    "debugging"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-ai": "*",
+    "@sinclair/typebox": "*"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-ai": "*",
+    "@sinclair/typebox": "*",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.8"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  }
+}
