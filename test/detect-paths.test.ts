@@ -109,6 +109,72 @@ test("does not match inside a longer word (e.g. .mp4extra)", () => {
 	expect(results[0]!.path).toBe("/tmp/real.mp4");
 });
 
+// ── frames:N annotation ──────────────────────────────────────────────────────
+
+test("detects trailing frames:N annotation and includes it in the match span", () => {
+	const text = "/tmp/clip.mov frames:20 what happened?";
+	const [m] = detectVideoPaths(text);
+	expect(m!.path).toBe("/tmp/clip.mov");
+	expect(m!.frames).toBe(20);
+	expect(m!.raw).toBe("/tmp/clip.mov frames:20");
+	expect(text.slice(m!.start, m!.end)).toBe(m!.raw);
+});
+
+test("frames:N is clamped to 1–32", () => {
+	const [high] = detectVideoPaths("/tmp/b.mov frames:999 test");
+	expect(high!.frames).toBe(32);
+
+	const [one] = detectVideoPaths("/tmp/c.mov frames:1 test");
+	expect(one!.frames).toBe(1);
+});
+
+test("frames:0 is ignored (no override)", () => {
+	const [m] = detectVideoPaths("/tmp/a.mov frames:0 test");
+	expect(m!.frames).toBeUndefined();
+	// The raw token should NOT include the annotation.
+	expect(m!.raw).toBe("/tmp/a.mov");
+});
+
+test("frames annotation is case-insensitive", () => {
+	const [m] = detectVideoPaths("/tmp/clip.mov FRAMES:8 test");
+	expect(m!.frames).toBe(8);
+});
+
+test("no frames annotation → frames is undefined", () => {
+	const [m] = detectVideoPaths("/tmp/clip.mov what happened?");
+	expect(m!.frames).toBeUndefined();
+});
+
+test("frames annotation works with quoted paths", () => {
+	const [m] = detectVideoPaths('"/tmp/my clip.mov" frames:15 test');
+	expect(m!.path).toBe("/tmp/my clip.mov");
+	expect(m!.frames).toBe(15);
+	expect(m!.raw).toBe('"/tmp/my clip.mov" frames:15');
+});
+
+test("frames annotation works with file:// URLs", () => {
+	const [m] = detectVideoPaths("file:///tmp/clip.mov frames:4 check");
+	expect(m!.path).toBe("/tmp/clip.mov");
+	expect(m!.frames).toBe(4);
+});
+
+test("per-video frames on multiple clips are independent", () => {
+	const text = '/tmp/a.mov frames:4 and "/tmp/b.mov" frames:24 done';
+	const results = detectVideoPaths(text);
+	expect(results.length).toBe(2);
+	expect(results[0]!.frames).toBe(4);
+	expect(results[1]!.frames).toBe(24);
+});
+
+test("frames annotation requires whitespace before it (not glued to path)", () => {
+	// "frames:8" glued to the path should not match as an annotation
+	// (it would be part of the filename in practice)
+	const [m] = detectVideoPaths("/tmp/clipframes:8.mov test");
+	expect(m!.frames).toBeUndefined();
+});
+
+// ── splice offset tests ─────────────────────────────────────────────────────
+
 test("start/end offsets correctly locate the raw token for splicing", () => {
 	const prefix = "hey look here: ";
 	const raw = "/tmp/clip.mov";

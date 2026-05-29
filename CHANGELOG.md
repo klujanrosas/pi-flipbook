@@ -5,6 +5,13 @@ All notable changes to `pi-flipbook` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Per-video `frames:N` annotation: append `frames:N` after any video path to
+  override the default min/max frame count (1–32) for that clip only.
+  Other clips in the same message keep the global defaults.
+
 ## [0.1.0] — 2026-05-27
 
 ### Added

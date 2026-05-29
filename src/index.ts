@@ -154,9 +154,12 @@ async function processOne(
 	}
 
 	// 5. Pick final timestamps (pure function — easy to reason about).
+	// Per-video `frames:N` annotation overrides the global min/max.
+	const maxFrames = d.frames ?? MAX_FRAMES;
+	const minFrames = d.frames ?? MIN_FRAMES;
 	const timestamps = selectTimestamps(effectiveDuration, scenes, {
-		minFrames: MIN_FRAMES,
-		maxFrames: MAX_FRAMES,
+		minFrames,
+		maxFrames,
 	});
 
 	// 6. Extract every chosen timestamp in parallel into a fresh tmpdir.

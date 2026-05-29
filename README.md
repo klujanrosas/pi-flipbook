@@ -70,6 +70,17 @@ what changes when I click the ✕ button?
 (+ 8 image attachments)
 ```
 
+### Per-video frame count
+
+Append `frames:N` right after the path to override the default frame count for that clip:
+
+```
+> /Users/ken/Desktop/bug.mov frames:20 walk me through every state change
+```
+
+`N` is clamped to **1–32**. This overrides both the floor (6) and the cap (12) for that video
+only — other clips in the same message keep the defaults.
+
 You can also pass a video via pi's built-in `@file` CLI syntax:
 
 ```bash
@@ -86,6 +97,12 @@ MVP uses two env vars, no config file:
 | `PI_FLIPBOOK_MAX_EDGE` | `1280` | Longest-edge pixel cap per frame (aspect-preserving). |
 | `PI_FLIPBOOK_MAX_DURATION` | `5` | Soft duration cap in seconds. Longer clips get truncated with a warning. |
 | `PI_FLIPBOOK_SCENE_THRESHOLD` | `0.10` | ffmpeg `select='gt(scene,X)'` sensitivity. Lower = more frames kept. |
+
+Per-video overrides (appended after the path in your message):
+
+| Annotation | Example | What |
+|---|---|---|
+| `frames:N` | `clip.mov frames:20` | Override frame count for this clip (1–32). |
 
 ## How it picks frames (hybrid strategy)
 

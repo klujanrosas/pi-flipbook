@@ -33,6 +33,8 @@ export interface DetectedVideoPath {
 	end: number;
 	/** Unquoted, unescaped, URL-decoded, `~`-expanded path. Still may be relative. */
 	path: string;
+	/** Per-video frame count override from a trailing `frames:N` annotation (1–32). */
+	frames?: number;
 }
 
 /**
@@ -61,6 +63,20 @@ export function detectVideoPaths(text: string): DetectedVideoPath[] {
 		if (last && m.start < last.end) continue;
 		out.push(m);
 	}
+	// Extract per-video annotations (e.g. `frames:N`) trailing each path.
+	for (const m of out) {
+		const after = text.slice(m.end);
+		const annoMatch = /^\s+frames:(\d+)/i.exec(after);
+		if (annoMatch) {
+			const n = Number.parseInt(annoMatch[1]!, 10);
+			if (Number.isFinite(n) && n > 0) {
+				m.frames = Math.min(32, Math.max(1, n));
+				m.end += annoMatch[0].length;
+				m.raw = text.slice(m.start, m.end);
+			}
+		}
+	}
+
 	return out;
 }
 
